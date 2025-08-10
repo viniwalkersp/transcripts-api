@@ -1,11 +1,8 @@
-// pages/api/upload.js
 import { put } from '@vercel/blob';
-import { buffer } from 'micro';
+import { nanoid } from 'nanoid';
 
 export const config = {
-  api: {
-    bodyParser: false, // importante: receberemos o raw body
-  },
+  api: { bodyParser: false }, // vamos receber o arquivo cru
 };
 
 export default async function handler(req, res) {
@@ -14,19 +11,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    // lê todo o body como Buffer
-    const fileBuffer = await buffer(req);
-    const fileName = req.headers['x-filename'] || `transcript-${Date.now()}.html`;
+    // nome do arquivo, se não vier no header, gera um aleatório
+    const filename = req.headers['x-filename'] || `transcript-${nanoid()}.html`;
 
-    // salva no Blob (público)
-    const blob = await put(fileName, fileBuffer, {
-      access: 'public',        // torna público
-      addRandomSuffix: true,   // evita sobrescrever com mesmo nome
-    });
+    // salva direto no Blob
+    const blob = await put(filename, req, { access: 'public' });
 
-    return res.status(200).json({ url: blob.url });
+    res.status(200).json({ url: blob.url });
   } catch (err) {
-    console.error('Erro no upload API:', err);
-    return res.status(500).json({ error: 'Upload failed', detail: err.message });
+    console.error('Erro no upload:', err);
+    res.status(500).json({ error: 'Falha no upload', detail: err.message });
   }
 }
