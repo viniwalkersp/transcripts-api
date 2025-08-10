@@ -19,7 +19,8 @@ export default async function handler(req, res) {
     // faz o upload pro Blob Storage com o token
     const blob = await put(filename, req, {
       access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      contentType: 'text/html'
     });
 
     // responde com o link público
